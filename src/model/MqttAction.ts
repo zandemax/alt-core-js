@@ -21,6 +21,8 @@ class MqttAction implements Action {
 
     public allowFailure = false;
 
+    private allowInsecure = false;
+
     private url: string;
 
     private username: string;
@@ -65,6 +67,7 @@ class MqttAction implements Action {
         url = actionDef.url,
         username = actionDef.username,
         password = actionDef.password,
+        allowInsecure = actionDef.allowInsecure,
         topic = actionDef.topic,
         durationInSec = actionDef.durationInSec,
         expectedNumberOfMessages = actionDef.expectedNumberOfMessages,
@@ -103,6 +106,7 @@ class MqttAction implements Action {
         this.description = desc;
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
+        this.allowInsecure = allowInsecure;
         this.diagramConfiguration = diagramConfiguration;
     }
 
@@ -183,6 +187,7 @@ class MqttAction implements Action {
             reconnectPeriod: 1000,
             connectTimeout: 30000,
             resubscribe: true,
+            rejectUnauthorized: !this.allowInsecure,
         });
 
         client.on('connect', () => {
