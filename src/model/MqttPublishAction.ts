@@ -40,6 +40,8 @@ class MqttPublishAction implements Action {
 
     public allowFailure = false;
 
+    private allowInsecure = false;
+
     private readonly diagramConfiguration: DiagramConfiguration;
 
     private readonly variableAsPayload?: string;
@@ -58,6 +60,7 @@ class MqttPublishAction implements Action {
         protoEncoding = actionDef.protoEncoding,
         invokeEvenOnFail = actionDef.invokeEvenOnFail,
         allowFailure = actionDef.allowFailure,
+        allowInsecure = actionDef.allowInsecure,
         diagramConfiguration = actionDef.diagramConfiguration ?? {},
         variableAsPayload = actionDef.variableAsPayload,
     ) {
@@ -73,6 +76,7 @@ class MqttPublishAction implements Action {
         this.description = desc;
         this.invokeEvenOnFail = invokeEvenOnFail;
         this.allowFailure = allowFailure;
+        this.allowInsecure = allowInsecure;
         this.diagramConfiguration = diagramConfiguration;
         this.variableAsPayload = variableAsPayload;
     }
@@ -154,6 +158,7 @@ class MqttPublishAction implements Action {
             reconnectPeriod: 1000,
             connectTimeout: 30000,
             resubscribe: true,
+            rejectUnauthorized: !this.allowInsecure,
         });
 
         client.on('connect', () => {
