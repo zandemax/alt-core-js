@@ -36,6 +36,7 @@ export interface RestActionDefinition extends ActionDefinition {
     readonly form?: { [key: string]: string };
     readonly variableAsPayload?: string;
     readonly responseValidation?: string[];
+    readonly expectedStatusCodes?: number[];
     readonly variables?: { [key: string]: string };
     readonly clientCertificate?: string;
     readonly clientKey?: string;
@@ -77,6 +78,8 @@ class RestAction implements Action {
 
     readonly responseValidation?: string[];
 
+    readonly expectedStatusCodes: number[];
+
     readonly variables?: { [key: string]: string };
 
     readonly invokeEvenOnFail: boolean;
@@ -105,6 +108,7 @@ class RestAction implements Action {
         restForm = actionDef.form,
         variableAsPayload = actionDef.variableAsPayload,
         validators = actionDef.responseValidation ?? [],
+        expectedStatusCodes = actionDef.expectedStatusCodes ?? [200, 201, 204],
         vars = actionDef.variables,
         invokeOnFail = actionDef.invokeEvenOnFail ?? false,
         allowFailure = actionDef.allowFailure ?? false,
@@ -125,6 +129,7 @@ class RestAction implements Action {
         this.form = restForm;
         this.variableAsPayload = variableAsPayload;
         this.responseValidation = [...validators];
+        this.expectedStatusCodes = expectedStatusCodes;
         this.variables = vars;
         this.invokeEvenOnFail = invokeOnFail;
         this.allowFailure = allowFailure;
@@ -159,6 +164,7 @@ class RestAction implements Action {
                   )
                 : actionDef.responseValidation,
             { ...template.variables, ...actionDef.variables },
+            actionDef.expectedStatusCodes ?? template.expectedStatusCodes,
             actionDef.invokeEvenOnFail ?? template.invokeEvenOnFail,
             actionDef.allowFailure ?? template.allowFailure,
             actionDef.clientCertificate ?? template.clientCertificate,
@@ -207,6 +213,7 @@ class RestAction implements Action {
         const scenarioVariables = this.variables;
         const registeredValidations = this.responseValidation;
         const targetService = this.serviceName;
+        const expectedStatusCodes = this.expectedStatusCodes;
 
         const logError = (errorMessage: string): void => {
             getLogger(ctx.scenario).error(errorMessage, ctx);
@@ -409,10 +416,7 @@ class RestAction implements Action {
                         this.diagramConfiguration,
                     );
 
-                    if (
-                        response.statusCode === 200 ||
-                        response.statusCode === 201
-                    ) {
+                    if (expectedStatusCodes.includes(response.statusCode)) {
                         logDebug(
                             `Response: ${response.statusCode} (${response.statusMessage}): ${response.body}`,
                         );
@@ -475,18 +479,6 @@ class RestAction implements Action {
                             );
                         }
 
-                        resolve();
-                    } else if (response.statusCode === 204) {
-                        logDebug(
-                            `Response: ${response.statusCode} (${response.statusMessage})`,
-                        );
-                        addSuccessfulResponse(
-                            scenario.name,
-                            targetService,
-                            `${response.statusMessage} (${response.statusCode})`,
-                            undefined,
-                            this.diagramConfiguration,
-                        );
                         resolve();
                     } else {
                         logError(
