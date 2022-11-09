@@ -36,8 +36,8 @@ export interface RestActionDefinition extends ActionDefinition {
     readonly form?: { [key: string]: string };
     readonly variableAsPayload?: string;
     readonly responseValidation?: string[];
-    readonly expectedStatusCodes?: number[];
     readonly variables?: { [key: string]: string };
+    readonly expectedStatusCodes?: number[];
     readonly clientCertificate?: string;
     readonly clientKey?: string;
     readonly expectBinaryResponse?: boolean;
@@ -108,8 +108,8 @@ class RestAction implements Action {
         restForm = actionDef.form,
         variableAsPayload = actionDef.variableAsPayload,
         validators = actionDef.responseValidation ?? [],
-        expectedStatusCodes = actionDef.expectedStatusCodes ?? [200, 201, 204],
         vars = actionDef.variables,
+        expectedStatusCodes = actionDef.expectedStatusCodes ?? [200, 201, 204],
         invokeOnFail = actionDef.invokeEvenOnFail ?? false,
         allowFailure = actionDef.allowFailure ?? false,
         clientCertificate = actionDef.clientCertificate,
@@ -129,8 +129,8 @@ class RestAction implements Action {
         this.form = restForm;
         this.variableAsPayload = variableAsPayload;
         this.responseValidation = [...validators];
-        this.expectedStatusCodes = expectedStatusCodes;
         this.variables = vars;
+        this.expectedStatusCodes = [...expectedStatusCodes];
         this.invokeEvenOnFail = invokeOnFail;
         this.allowFailure = allowFailure;
         this.clientCertificate = clientCertificate;
@@ -222,6 +222,8 @@ class RestAction implements Action {
         const logDebug = (debugMessage: string): void => {
             getLogger(ctx.scenario).debug(debugMessage, ctx);
         };
+
+        logDebug(`Expected status codes: ${expectedStatusCodes}`);
 
         // TODO: Split in 2 seperate functions for res and head
         const updateScenarioCache = ({
