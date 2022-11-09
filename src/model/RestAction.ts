@@ -213,6 +213,7 @@ class RestAction implements Action {
         const scenarioVariables = this.variables;
         const registeredValidations = this.responseValidation;
         const targetService = this.serviceName;
+        // eslint-disable-next-line
         const expectedStatusCodes = this.expectedStatusCodes;
 
         const logError = (errorMessage: string): void => {
